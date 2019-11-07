@@ -8,6 +8,7 @@
 
 void main()
 {
+	//coment
 	WORD winsock_version = 0x202;
 	WSADATA winsock_data;
 	if( WSAStartup( winsock_version, &winsock_data ) )

@@ -67,5 +67,18 @@ void main()
 			printf( "sendto failed: %d", WSAGetLastError() );
 			return;
 		}
+
+		//recive
+		flags = 0;
+		SOCKADDR_IN from;
+		int from_size = sizeof(from);
+		int bytes_received = recvfrom(sock, buf, 20, flags, (SOCKADDR*)&from, &from_size);
+
+		if (bytes_received == SOCKET_ERROR)
+		{
+			printf("recvfrom returned SOCKET_ERROR, WSAGetLastError() %d", WSAGetLastError());
+			break;
+		}
+		printf("%s\n", buf);
 	}
 }

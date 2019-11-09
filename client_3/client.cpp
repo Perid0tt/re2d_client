@@ -33,7 +33,7 @@ void main()
 	server_address.sin_family = AF_INET;
 	server_address.sin_port = htons( PORT );
 
-	bool toserver = 1;
+	bool toserver = 0;
 
 	if (toserver)
 	{

@@ -149,9 +149,6 @@
   <ItemGroup>
     <ClCompile Include="client.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="odin.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

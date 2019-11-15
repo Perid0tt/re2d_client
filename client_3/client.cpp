@@ -1,84 +1,139 @@
-#include "odin.h"
-
-#include <stdio.h>
 #include <winsock2.h>
-#include <iostream>
+#include <Ws2tcpip.h>
 #include <windows.h>
+#include <string>
+#include <iostream>
+#include <thread>
 
-using namespace std;
+#pragma warning(disable:4996) 
 
-void main()
-{
-	WORD winsock_version = 0x202;
-	WSADATA winsock_data;
-	if( WSAStartup( winsock_version, &winsock_data ) )
-	{
-		printf( "WSAStartup failed: %d", WSAGetLastError() );
-		return;
-	}
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-	int address_family = AF_INET;
-	int type = SOCK_DGRAM;
-	int protocol = IPPROTO_UDP;
-	SOCKET sock = socket( address_family, type, protocol );
+#pragma comment(lib,"ws2_32.lib")
 
-	if( sock == INVALID_SOCKET )
-	{
-		printf( "socket failed: %d", WSAGetLastError() );
-		return;
+const int BUFFERLENGTH = 1024;
 
-	}
+char buffer[BUFFERLENGTH];
 
-	SOCKADDR_IN server_address;
-	server_address.sin_family = AF_INET;
+SOCKET connectSocket;
+SOCKADDR_IN otherAddr;
+int otherSize;
 
-	bool toserver = 0;
+std::string NormalizedIPString(SOCKADDR_IN addr) {
+	char host[16];
+	ZeroMemory(host, 16);
+	inet_ntop(AF_INET, &addr.sin_addr, host, 16);
 
-	if (toserver)
-	{
-		server_address.sin_addr.S_un.S_un_b.s_b1 = 78;
-		server_address.sin_addr.S_un.S_un_b.s_b2 = 24;
-		server_address.sin_addr.S_un.S_un_b.s_b3 = 219;
-		server_address.sin_addr.S_un.S_un_b.s_b4 = 108;
-		server_address.sin_port = htons(1707);
-	}
-	else
-	{
-		server_address.sin_addr.S_un.S_un_b.s_b1 = 188;
-		server_address.sin_addr.S_un.S_un_b.s_b2 = 170;
-		server_address.sin_addr.S_un.S_un_b.s_b3 = 83;
-		server_address.sin_addr.S_un.S_un_b.s_b4 = 199;
-		server_address.sin_port = htons(34001);
-	}
+	USHORT port = ntohs(addr.sin_port);
 
-	//int8 buffer[SOCKET_BUFFER_SIZE];
-	char buf[20];
-	
-
-	printf("%d.%d.%d.%d:%d\n", server_address.sin_addr.S_un.S_un_b.s_b1, server_address.sin_addr.S_un.S_un_b.s_b2, server_address.sin_addr.S_un.S_un_b.s_b3, server_address.sin_addr.S_un.S_un_b.s_b4, ntohs(server_address.sin_port));
-	while(1)
-	{
-		cin >> buf;
-		int buffer_length = 19;
-		int flags = 0;
-		SOCKADDR* to = (SOCKADDR*)&server_address;
-		int to_length = sizeof( server_address );
-		for (int i = 0; i < 10; i++)
-		{
-			sendto(sock, buf, buffer_length, flags, to, to_length);
-		}
-
-		//recive
-		flags = 0;
-		SOCKADDR_IN from;
-		int from_size = sizeof(from);
-		int bytes_received = recvfrom(sock, buf, 20, flags, (SOCKADDR*)&from, &from_size);
-
-		if (bytes_received == SOCKET_ERROR)
-		{
-			printf("recvfrom returned SOCKET_ERROR, WSAGetLastError() %d", WSAGetLastError());
+	int realLen = 0;
+	for (int i = 0; i < 16; i++) {
+		if (host[i] == '\00') {
 			break;
 		}
-		printf("%s\n", buf);
+		realLen++;
 	}
+
+	std::string res(host, realLen);
+	res += ":" + std::to_string(port);
+
+	return res;
+}
+
+void TaskRec() {
+	while (true) {
+		SOCKADDR_IN remoteAddr;
+		int	remoteAddrLen = sizeof(remoteAddr);
+
+		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
+
+		if (iResult > 0) {
+			std::cout << NormalizedIPString(remoteAddr) << " -> " << std::string(buffer, buffer + iResult) << std::endl;
+		}
+		else {
+			std::cout << "Error: Peer closed." << std::endl;
+		}
+	}
+}
+
+int main() {
+	SetConsoleTitleA("Client");
+
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+		return 0;
+	}
+
+	SOCKADDR_IN serverAddr;
+	serverAddr.sin_port = htons(6668);
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_addr.s_addr = inet_addr("78.24.219.108");
+
+
+	int serverSize = sizeof(serverAddr);
+
+	connectSocket = socket(AF_INET, SOCK_DGRAM, 0);
+
+	SOCKADDR_IN clientAddr;
+	clientAddr.sin_port = 0;
+	clientAddr.sin_family = AF_INET;
+	clientAddr.sin_addr.s_addr = INADDR_ANY;
+
+	if (bind(connectSocket, (LPSOCKADDR)&clientAddr, sizeof(clientAddr)) == SOCKET_ERROR) {
+		return 0;
+	}
+
+	int val = 64 * 1024;
+	setsockopt(connectSocket, SOL_SOCKET, SO_SNDBUF, (char*)&val, sizeof(val));
+	setsockopt(connectSocket, SOL_SOCKET, SO_RCVBUF, (char*)&val, sizeof(val));
+
+	std::string request = "1";
+	std::cout << "Identificationnumber: ";  std::cin >> request;
+
+	sendto(connectSocket, request.c_str(), request.length(), 0, (sockaddr*)&serverAddr, serverSize);
+
+	bool notFound = true;
+
+	std::string endpoint;
+
+	while (notFound) {
+		SOCKADDR_IN remoteAddr;
+		int	remoteAddrLen = sizeof(remoteAddr);
+
+		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
+
+		if (iResult > 0) {
+			endpoint = std::string(buffer, buffer + iResult);
+
+			std::cout << "Peer-to-peer Endpoint: " << endpoint << std::endl;
+
+			notFound = false;
+		}
+		else {
+
+			std::cout << WSAGetLastError();
+		}
+	}
+
+	std::string host = endpoint.substr(0, endpoint.find(':'));
+	int port = stoi(endpoint.substr(endpoint.find(':') + 1));
+
+	otherAddr.sin_port = htons(port);
+	otherAddr.sin_family = AF_INET;
+	otherAddr.sin_addr.s_addr = inet_addr(host.c_str());
+
+	otherSize = sizeof(otherAddr);
+
+	std::thread t1(TaskRec);
+
+	while (true) {
+		std::string msg = "Hello from Polyakov!";
+		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
+		Sleep(500);
+	}
+
+	getchar();
+
+	closesocket(connectSocket);
+	WSACleanup();
 }

@@ -31,9 +31,8 @@ void main()
 
 	SOCKADDR_IN server_address;
 	server_address.sin_family = AF_INET;
-	server_address.sin_port = htons( PORT );
 
-	bool toserver = 1;
+	bool toserver = 0;
 
 	if (toserver)
 	{
@@ -41,13 +40,15 @@ void main()
 		server_address.sin_addr.S_un.S_un_b.s_b2 = 24;
 		server_address.sin_addr.S_un.S_un_b.s_b3 = 219;
 		server_address.sin_addr.S_un.S_un_b.s_b4 = 108;
+		server_address.sin_port = htons(1707);
 	}
 	else
 	{
-		server_address.sin_addr.S_un.S_un_b.s_b1 = 127;
-		server_address.sin_addr.S_un.S_un_b.s_b2 = 0;
-		server_address.sin_addr.S_un.S_un_b.s_b3 = 0;
-		server_address.sin_addr.S_un.S_un_b.s_b4 = 1;
+		server_address.sin_addr.S_un.S_un_b.s_b1 = 188;
+		server_address.sin_addr.S_un.S_un_b.s_b2 = 170;
+		server_address.sin_addr.S_un.S_un_b.s_b3 = 83;
+		server_address.sin_addr.S_un.S_un_b.s_b4 = 199;
+		server_address.sin_port = htons(34001);
 	}
 
 	//int8 buffer[SOCKET_BUFFER_SIZE];
@@ -62,10 +63,9 @@ void main()
 		int flags = 0;
 		SOCKADDR* to = (SOCKADDR*)&server_address;
 		int to_length = sizeof( server_address );
-		if( sendto( sock, buf, buffer_length, flags, to, to_length ) == SOCKET_ERROR )
+		for (int i = 0; i < 10; i++)
 		{
-			printf( "sendto failed: %d", WSAGetLastError() );
-			return;
+			sendto(sock, buf, buffer_length, flags, to, to_length);
 		}
 
 		//recive

@@ -4,22 +4,23 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include "2d_graphics.h"
 
 #pragma warning(disable:4996) 
-
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
 #pragma comment(lib,"ws2_32.lib")
+using namespace std;
 
 const int BUFFERLENGTH = 1024;
-
+const int SERVERPORT = 1707;
+const string SERVERIP = "78.24.219.108";
 char buffer[BUFFERLENGTH];
 
 SOCKET connectSocket;
 SOCKADDR_IN otherAddr;
 int otherSize;
 
-std::string NormalizedIPString(SOCKADDR_IN addr) {
+string NormalizedIPString(SOCKADDR_IN addr) {
 	char host[16];
 	ZeroMemory(host, 16);
 	inet_ntop(AF_INET, &addr.sin_addr, host, 16);
@@ -27,47 +28,53 @@ std::string NormalizedIPString(SOCKADDR_IN addr) {
 	USHORT port = ntohs(addr.sin_port);
 
 	int realLen = 0;
-	for (int i = 0; i < 16; i++) {
-		if (host[i] == '\00') {
-			break;
-		}
+	for (int i = 0; i < 16; i++) 
+	{
+		if (host[i] == '\00') break;
 		realLen++;
 	}
 
-	std::string res(host, realLen);
-	res += ":" + std::to_string(port);
+	string res(host, realLen);
+	res += ":" + to_string(port);
 
 	return res;
 }
 
-void TaskRec() {
-	while (true) {
+void TaskRec() 
+{
+	while (true) 
+	{
 		SOCKADDR_IN remoteAddr;
 		int	remoteAddrLen = sizeof(remoteAddr);
 
 		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
 
-		if (iResult > 0) {
-			std::cout << NormalizedIPString(remoteAddr) << " -> " << std::string(buffer, buffer + iResult) << std::endl;
+		if (iResult > 0) 
+		{
+			cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
 		}
-		else {
-			std::cout << "Error: Peer closed." << std::endl;
+		else 
+		{
+			cout << "Error: Peer closed." << endl;
 		}
 	}
 }
 
-int main() {
+
+int main(int argc, char* argv[])
+{
+	WindowSetup(1000, 150, 500, 500);
+	thread t2(GraphicsWindow);
+	
 	SetConsoleTitleA("Client");
 
 	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-		return 0;
-	}
+	WSAStartup(MAKEWORD(2, 2), &wsaData);
 
 	SOCKADDR_IN serverAddr;
-	serverAddr.sin_port = htons(6668);
+	serverAddr.sin_port = htons(SERVERPORT);
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_addr.s_addr = inet_addr("78.24.219.108");
+	serverAddr.sin_addr.s_addr = inet_addr(SERVERIP.c_str());
 
 
 	int serverSize = sizeof(serverAddr);
@@ -79,43 +86,43 @@ int main() {
 	clientAddr.sin_family = AF_INET;
 	clientAddr.sin_addr.s_addr = INADDR_ANY;
 
-	if (bind(connectSocket, (LPSOCKADDR)&clientAddr, sizeof(clientAddr)) == SOCKET_ERROR) {
-		return 0;
-	}
+	bind(connectSocket, (LPSOCKADDR)&clientAddr, sizeof(clientAddr));
 
 	int val = 64 * 1024;
 	setsockopt(connectSocket, SOL_SOCKET, SO_SNDBUF, (char*)&val, sizeof(val));
 	setsockopt(connectSocket, SOL_SOCKET, SO_RCVBUF, (char*)&val, sizeof(val));
 
-	std::string request = "1";
-	std::cout << "Identificationnumber: ";  std::cin >> request;
+	string request = "1";
+	cout << "Identificationnumber: ";  cin >> request;
 
 	sendto(connectSocket, request.c_str(), request.length(), 0, (sockaddr*)&serverAddr, serverSize);
 
 	bool notFound = true;
 
-	std::string endpoint;
+	string endpoint;
 
-	while (notFound) {
+	while (notFound) 
+	{
 		SOCKADDR_IN remoteAddr;
 		int	remoteAddrLen = sizeof(remoteAddr);
 
 		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
 
-		if (iResult > 0) {
-			endpoint = std::string(buffer, buffer + iResult);
+		if (iResult > 0) 
+		{
+			endpoint = string(buffer, buffer + iResult);
 
-			std::cout << "Peer-to-peer Endpoint: " << endpoint << std::endl;
+			cout << "Peer-to-peer Endpoint: " << endpoint << endl;
 
 			notFound = false;
 		}
-		else {
-
-			std::cout << WSAGetLastError();
+		else 
+		{
+			cout << WSAGetLastError();
 		}
 	}
-
-	std::string host = endpoint.substr(0, endpoint.find(':'));
+	 
+	string host = endpoint.substr(0, endpoint.find(':'));
 	int port = stoi(endpoint.substr(endpoint.find(':') + 1));
 
 	otherAddr.sin_port = htons(port);
@@ -124,10 +131,11 @@ int main() {
 
 	otherSize = sizeof(otherAddr);
 
-	std::thread t1(TaskRec);
-
-	while (true) {
-		std::string msg = "Hello from Polyakov!";
+	thread t1(TaskRec);
+	
+	while (true) 
+	{
+		string msg = "Hello from Polyakov!";
 		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
 		Sleep(500);
 	}
@@ -136,4 +144,5 @@ int main() {
 
 	closesocket(connectSocket);
 	WSACleanup();
+	return 0;
 }

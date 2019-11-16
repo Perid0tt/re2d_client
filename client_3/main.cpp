@@ -54,10 +54,12 @@ void TaskRec()
 		int	remoteAddrLen = sizeof(remoteAddr);
 
 		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
+		//int iResult = recv(connectSocket, buffer, BUFFERLENGTH, 0);
 
 		if (iResult > 0) 
 		{
 			cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
+			//cout  << " -> " << string(buffer, buffer + iResult) << endl;
 			string recived = ch_tostr(buffer, 20);
 			gui.getwasd(buffer);
 			me.c.x = stoi(split(recived, "/", 2));
@@ -65,7 +67,7 @@ void TaskRec()
 		}
 		else 
 		{
-			cout << "Error: Peer closed." << endl;
+			//cout << "Error" << endl;
 		}
 	}
 }
@@ -84,7 +86,7 @@ void TaskSend()
 
 int main(int argc, char* argv[])
 {
-
+	
 	SetConsoleTitleA("Client");
 
 	WSADATA wsaData;
@@ -149,6 +151,9 @@ int main(int argc, char* argv[])
 	otherAddr.sin_addr.s_addr = inet_addr(host.c_str());
 
 	otherSize = sizeof(otherAddr);
+
+	u_long iMode = 1;
+	ioctlsocket(connectSocket, FIONBIO, &iMode);
 
 	thread t1(TaskRec);
 	thread t2(TaskSend);

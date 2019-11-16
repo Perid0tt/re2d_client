@@ -161,9 +161,12 @@
   <ItemGroup>
     <ClCompile Include="2d_graphics.cpp" />
     <ClCompile Include="client.cpp" />
+    <ClCompile Include="physics.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="2d_graphics.h" />
+    <ClInclude Include="convert.h" />
+    <ClInclude Include="physics.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <thread>
 #include "2d_graphics.h"
+#include "convert.h"
 
 #pragma warning(disable:4996) 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -19,6 +20,11 @@ char buffer[BUFFERLENGTH];
 SOCKET connectSocket;
 SOCKADDR_IN otherAddr;
 int otherSize;
+
+extern char keys[];
+extern player gui;
+extern player me;
+
 
 string NormalizedIPString(SOCKADDR_IN addr) {
 	char host[16];
@@ -52,6 +58,10 @@ void TaskRec()
 		if (iResult > 0) 
 		{
 			cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
+			string recived = ch_tostr(buffer, 20);
+			gui.getwasd(buffer);
+			me.c.x = stoi(split(recived, "/", 2));
+			me.c.y = stoi(split(recived, "/", 3));
 		}
 		else 
 		{
@@ -60,12 +70,21 @@ void TaskRec()
 	}
 }
 
+void TaskSend()
+{
+	while (1)
+	{
+		string msg = ch_tostr(keys, 4);
+		msg += "/" +  to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/";
+		sendto(connectSocket, msg.c_str(), 20, 0, (sockaddr*)&otherAddr, otherSize);
+		Sleep(5);
+	}
+}
+
 
 int main(int argc, char* argv[])
 {
-	WindowSetup(1000, 150, 500, 500);
-	thread t2(GraphicsWindow);
-	
+
 	SetConsoleTitleA("Client");
 
 	WSADATA wsaData;
@@ -132,13 +151,10 @@ int main(int argc, char* argv[])
 	otherSize = sizeof(otherAddr);
 
 	thread t1(TaskRec);
-	
-	while (true) 
-	{
-		string msg = "Hello from Polyakov!";
-		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
-		Sleep(500);
-	}
+	thread t2(TaskSend);
+
+	WindowSetup(1030, 150, 500, 500);
+	GraphicsWindow();
 
 	getchar();
 

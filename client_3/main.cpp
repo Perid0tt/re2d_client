@@ -24,6 +24,9 @@ SOCKADDR_IN otherAddr;
 int otherSize;
 string GuiTime = "0";
 string MyOldTime = "0";
+int ping = 0;
+bool gotmail = 0;
+int gotmailtime;
 
 
 extern char keys[];
@@ -51,29 +54,44 @@ string NormalizedIPString(SOCKADDR_IN addr) {
 	return res;
 }
 
+void writeconsole()
+{
+	while (1)
+	{
+		cout << ping << endl;
+		Sleep(100);
+	}
+}
+
 void TaskRec() 
 {
 	while (true) 
 	{
-		
-
 		SOCKADDR_IN remoteAddr;
 		int	remoteAddrLen = sizeof(remoteAddr);
 
 		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
-		//int iResult = recv(connectSocket, buffer, BUFFERLENGTH, 0);
 
 		if (iResult > 0) 
 		{
-			cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult);
-			//cout  << " -> " << string(buffer, buffer + iResult) << endl;
-			string recived = ch_tostr(buffer, 20);
-			gui.getwasd(buffer);
-			me.c.x = stoi(split(recived, "/", 2));
-			me.c.y = stoi(split(recived, "/", 3));
-			GuiTime = split(recived, "/", 4);
-			MyOldTime = split(recived, "/", 5);
-			cout <<"	"<< clock() << "	" << clock() - stoi(MyOldTime) << endl;
+			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult)<<endl;
+			if (buffer[0] == '#')
+			{
+				string recived = ch_tostr(buffer, 30);	
+				me.c.x = stoi(split(recived, "/", 2));
+				me.c.y = stoi(split(recived, "/", 3));
+				GuiTime = split(recived, "/", 4);
+				MyOldTime = split(recived, "/", 5);
+
+				gotmail = true;
+				ping = clock() - stoi(MyOldTime);
+				//cout << "	" << clock() << "	" << clock() - stoi(MyOldTime) << endl;
+			}
+			else
+			{
+				gui.getwasd(buffer);
+			}
+	
 		}
 		else 
 		{
@@ -82,14 +100,33 @@ void TaskRec()
 	}
 }
 
-void TaskSend()
+void TaskSendData()
+{
+	while (1)
+	{
+		if (gotmail || clock() - gotmailtime > 1000)
+		{
+			/*if(gotmail)cout << "send" << endl;
+			else cout << "send	time" << endl;*/
+
+			string msg = "#";
+			msg += "/" + to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/" + to_string(clock()) + "/" + GuiTime;
+			sendto(connectSocket, msg.c_str(), 30, 0, (sockaddr*)&otherAddr, otherSize);
+
+			gotmail = false;
+			gotmailtime = clock();
+			Sleep(10);
+		}
+	}
+}
+
+void TaskSendInput()
 {
 	while (1)
 	{
 		string msg = ch_tostr(keys, 4);
-		msg += "/" +  to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/" + to_string(clock()) + "/" + GuiTime;
-		sendto(connectSocket, msg.c_str(), 30, 0, (sockaddr*)&otherAddr, otherSize);
-		Sleep(500);
+		sendto(connectSocket, msg.c_str(), 4, 0, (sockaddr*)&otherAddr, otherSize);
+		Sleep(10);
 	}
 }
 
@@ -166,8 +203,12 @@ int main(int argc, char* argv[])
 	u_long iMode = 1;
 	ioctlsocket(connectSocket, FIONBIO, &iMode);
 
+	gotmailtime = clock();
+
 	thread t1(TaskRec);
-	thread t2(TaskSend);
+	thread t2(TaskSendData);
+	thread t3(TaskSendInput);
+	thread t4(writeconsole);
 
 	WindowSetup(1030, 150, 500, 500);
 	GraphicsWindow();

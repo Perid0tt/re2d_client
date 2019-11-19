@@ -74,22 +74,29 @@ void TaskRec()
 
 		if (iResult > 0) 
 		{
-			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult)<<endl;
+			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
+			string recived = ch_tostr(buffer, 30);
 			if (buffer[0] == '#')
-			{
-				string recived = ch_tostr(buffer, 30);	
+			{	
 				me.c.x = stoi(split(recived, "/", 2));
 				me.c.y = stoi(split(recived, "/", 3));
-				GuiTime = split(recived, "/", 4);
-				MyOldTime = split(recived, "/", 5);
+				MyOldTime = split(recived, "/", 4);
 
 				gotmail = true;
-				ping = clock() - stoi(MyOldTime);
+				try
+				{
+					ping = clock() - stoi(MyOldTime);
+				}
+				catch (...) 
+				{
+					cout << "APE OF SHIT" << endl;
+				}
 				//cout << "	" << clock() << "	" << clock() - stoi(MyOldTime) << endl;
 			}
 			else
 			{
 				gui.getwasd(buffer);
+				GuiTime = split(recived, "/", 2);
 			}
 	
 		}
@@ -110,7 +117,7 @@ void TaskSendData()
 			else cout << "send	time" << endl;*/
 
 			string msg = "#";
-			msg += "/" + to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/" + to_string(clock()) + "/" + GuiTime;
+			msg += "/" + to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/" + GuiTime;
 			sendto(connectSocket, msg.c_str(), 30, 0, (sockaddr*)&otherAddr, otherSize);
 
 			gotmail = false;
@@ -125,7 +132,8 @@ void TaskSendInput()
 	while (1)
 	{
 		string msg = ch_tostr(keys, 4);
-		sendto(connectSocket, msg.c_str(), 4, 0, (sockaddr*)&otherAddr, otherSize);
+		msg += "/" + to_string(clock());
+		sendto(connectSocket, msg.c_str(), 20, 0, (sockaddr*)&otherAddr, otherSize);
 		Sleep(10);
 	}
 }

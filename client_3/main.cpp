@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <ctime>
+#include <stdlib.h>
 #include "2d_graphics.h"
 #include "convert.h"
 
@@ -20,6 +22,9 @@ char buffer[BUFFERLENGTH];
 SOCKET connectSocket;
 SOCKADDR_IN otherAddr;
 int otherSize;
+string GuiTime = "0";
+string MyOldTime = "0";
+
 
 extern char keys[];
 extern player gui;
@@ -50,6 +55,8 @@ void TaskRec()
 {
 	while (true) 
 	{
+		
+
 		SOCKADDR_IN remoteAddr;
 		int	remoteAddrLen = sizeof(remoteAddr);
 
@@ -58,12 +65,15 @@ void TaskRec()
 
 		if (iResult > 0) 
 		{
-			cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
+			cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult);
 			//cout  << " -> " << string(buffer, buffer + iResult) << endl;
 			string recived = ch_tostr(buffer, 20);
 			gui.getwasd(buffer);
 			me.c.x = stoi(split(recived, "/", 2));
 			me.c.y = stoi(split(recived, "/", 3));
+			GuiTime = split(recived, "/", 4);
+			MyOldTime = split(recived, "/", 5);
+			cout <<"	"<< clock() << "	" << clock() - stoi(MyOldTime) << endl;
 		}
 		else 
 		{
@@ -77,16 +87,17 @@ void TaskSend()
 	while (1)
 	{
 		string msg = ch_tostr(keys, 4);
-		msg += "/" +  to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/";
-		sendto(connectSocket, msg.c_str(), 20, 0, (sockaddr*)&otherAddr, otherSize);
-		Sleep(5);
+		msg += "/" +  to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/" + to_string(clock()) + "/" + GuiTime;
+		sendto(connectSocket, msg.c_str(), 30, 0, (sockaddr*)&otherAddr, otherSize);
+		Sleep(500);
 	}
 }
 
 
 int main(int argc, char* argv[])
 {
-	
+	//cout << stoi("  36?5d") << endl;
+
 	SetConsoleTitleA("Client");
 
 	WSADATA wsaData;

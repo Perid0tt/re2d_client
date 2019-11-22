@@ -1,12 +1,27 @@
 #pragma once
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <iostream>
+
+using namespace std;
+
+double okr(double, unsigned int);
+
 struct coord
 {
-	int x = 0, y = 0;
+	float x = 0, y = 0;
 };
 
-struct player
+struct dir
 {
+	float angle, value;
+};
+
+class player
+{
+public:
 	coord c;
+	dir speed;
 	bool wasd[4] = { 0,0,0,0 };
 	void getwasd(char C_wasd[])
 	{
@@ -19,14 +34,31 @@ struct player
 		if (C_wasd[3] == 'd')wasd[3] = 1;
 		else wasd[3] = 0;
 	}
-	void move()
+	void setspeed()
 	{
-		if (wasd[0]) c.y-=3;
-		if (wasd[1]) c.x-=3;
-		if (wasd[2]) c.y+=3;
-		if (wasd[3]) c.x+=3;
+		int x, y, gip;
+
+		x = int(wasd[3]) - int(wasd[1]);
+		y = int(wasd[2]) - int(wasd[0]);
+
+		if (y == 1 && x == 0) speed.angle = M_PI_2;
+		if (y == 1 && x == 1) speed.angle = M_PI_4;
+		if (y == 0 && x == 1) speed.angle = 0;
+		if (y == -1 && x == 1) speed.angle = -M_PI_4;
+		if (y == -1 && x == 0) speed.angle = -M_PI_2;
+		if (y == -1 && x == -1) speed.angle = -M_PI_4 * 3;
+		if (y == 0 && x == -1) speed.angle = M_PI;
+		if (y == 1 && x == -1) speed.angle = M_PI_4 * 3;
+
+		if (x != 0 || y != 0) speed.value = 3;
+		else speed.value = 0;
 	}
-	void moveto(int x, int y)
+	void MoveToSpeed()
+	{
+		c.x += speed.value * cos(speed.angle);
+		c.y += speed.value * sin(speed.angle);
+	}
+	void MoveToCord(int x, int y)
 	{
 		c.x = x;
 		c.y = y;

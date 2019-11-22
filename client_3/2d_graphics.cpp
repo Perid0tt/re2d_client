@@ -20,6 +20,8 @@ void GraphicsWindow()
 	SDL_Renderer *renderer = rendererg;
 	SDL_Event e;
 	int a = 0;
+	gui.MoveToCord(250, 250);
+	//me.MoveToCord(250, 250);
 	while (1)
 	{
 		while (SDL_PollEvent(&e))
@@ -50,6 +52,7 @@ void GraphicsWindow()
 		SDL_Delay(1);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
+		SDL_Delay(1);
 	}
 }
 

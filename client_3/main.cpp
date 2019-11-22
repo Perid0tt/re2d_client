@@ -58,7 +58,7 @@ void writeconsole()
 {
 	while (1)
 	{
-		cout << ping << endl;
+		//cout << ping << endl;
 		Sleep(100);
 	}
 }
@@ -75,12 +75,14 @@ void TaskRec()
 		if (iResult > 0) 
 		{
 			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
-			string recived = ch_tostr(buffer, 30);
+			string recived = ch_tostr(buffer, 40);
 			if (buffer[0] == '#')
 			{	
 				me.c.x = stoi(split(recived, "/", 2));
 				me.c.y = stoi(split(recived, "/", 3));
 				MyOldTime = split(recived, "/", 4);
+				me.speed.angle = float(stoi(split(recived, "/", 5))) / 100;
+				me.speed.value = stoi(split(recived, "/", 6));
 
 				gotmail = true;
 				try
@@ -91,7 +93,6 @@ void TaskRec()
 				{
 					cout << "APE OF SHIT" << endl;
 				}
-				//cout << "	" << clock() << "	" << clock() - stoi(MyOldTime) << endl;
 			}
 			else
 			{
@@ -117,12 +118,12 @@ void TaskSendData()
 			else cout << "send	time" << endl;*/
 
 			string msg = "#";
-			msg += "/" + to_string(gui.c.x) + "/" + to_string(gui.c.y) + "/" + GuiTime;
-			sendto(connectSocket, msg.c_str(), 30, 0, (sockaddr*)&otherAddr, otherSize);
+			msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle*100)) + "/" + to_string(int(gui.speed.value)) + "/";
+			sendto(connectSocket, msg.c_str(), 40, 0, (sockaddr*)&otherAddr, otherSize);
 
 			gotmail = false;
 			gotmailtime = clock();
-			Sleep(10);
+			Sleep(5);
 		}
 	}
 }
@@ -132,7 +133,7 @@ void TaskSendInput()
 	while (1)
 	{
 		string msg = ch_tostr(keys, 4);
-		msg += "/" + to_string(clock());
+		msg += "/" + to_string(clock()) + "/";
 		sendto(connectSocket, msg.c_str(), 20, 0, (sockaddr*)&otherAddr, otherSize);
 		Sleep(10);
 	}

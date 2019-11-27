@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="2d_graphics.cpp" />
+    <ClCompile Include="convert.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="physics.cpp" />
   </ItemGroup>

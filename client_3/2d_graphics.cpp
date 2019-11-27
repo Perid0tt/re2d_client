@@ -1,10 +1,12 @@
 #include "2d_graphics.h"
 
+
 SDL_Renderer *rendererg;
 char keys[4] = { '-','-','-','-' };
 
 extern player gui;
 extern player me;
+extern dualnet_int Framecount;
 
 void WindowSetup(int xpos, int ypos, int weidth, int height)
 {
@@ -21,7 +23,7 @@ void GraphicsWindow()
 	SDL_Event e;
 	int a = 0;
 	gui.MoveToCord(250, 250);
-	//me.MoveToCord(250, 250);
+	me.MoveToCord(250, 250);
 	while (1)
 	{
 		while (SDL_PollEvent(&e))
@@ -52,6 +54,8 @@ void GraphicsWindow()
 		SDL_Delay(1);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
+
+		Framecount.me++;
 		SDL_Delay(1);
 	}
 }

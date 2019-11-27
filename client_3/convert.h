@@ -2,33 +2,15 @@
 #include <string>
 using namespace std;
 
-string ch_tostr(char* a, int size)
+struct dualnet_int
 {
-	int i;
-	string s = "";
-	for (i = 0; i < size; i++) {
-		s = s + a[i];
-	}
-	return s;
-}
+	int gui, me;
+};
+struct dualnet_string
+{
+	string gui, me;
+};
 
-string split(string s, string delimiter, int number)
-{
-	size_t pos = 0;
-	string token;
-	int i = 1;
-	bool sovpad = false;
-	while ((pos = s.find(delimiter)) != string::npos) 
-	{
-		token = s.substr(0, pos);
-		if (i == number)
-		{
-			sovpad = true;
-			break;
-		}
-		s.erase(0, pos + delimiter.length());
-		i++;
-	}
-	if(sovpad)return token;
-	else return s;
-}
+string ch_tostr(char*, int);
+
+string split(string, string, int);

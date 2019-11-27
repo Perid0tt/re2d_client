@@ -14,25 +14,31 @@
 #pragma comment(lib,"ws2_32.lib")
 using namespace std;
 
-const int BUFFERLENGTH = 1024;
+const int BUFFERLENGTH = 40;
 const int SERVERPORT = 1707;
 const string SERVERIP = "78.24.219.108";
 char buffer[BUFFERLENGTH];
-
 SOCKET connectSocket;
 SOCKADDR_IN otherAddr;
+
 int otherSize;
 string GuiTime = "0";
 string MyOldTime = "0";
 int ping = 0;
 bool gotmail = 0;
 int gotmailtime;
-
+int packet_num = 0;
+string GuiPacketNum = "0";
+string MyOldPacketNum = "0";
+int LastShow = 0;
+dualnet_int Framecount;
+coord ForMeCalc_c;
+dir ForMeCalc_d;
+bool ConnectedToGui = false;
 
 extern char keys[];
 extern player gui;
 extern player me;
-
 
 string NormalizedIPString(SOCKADDR_IN addr) {
 	char host[16];
@@ -56,11 +62,27 @@ string NormalizedIPString(SOCKADDR_IN addr) {
 
 void writeconsole()
 {
+	cout << "CONNECTING";
 	while (1)
 	{
+		if (!ConnectedToGui)
+		{
+			if (ping != 0)
+			{
+				cout << "\nCONNECTED \n\n";
+				ConnectedToGui = true;
+			}
+			else cout << ".";
+		}
 		//cout << ping << endl;
 		Sleep(100);
 	}
+}
+
+void showt(string output)
+{
+	cout << output << " : " << clock() - LastShow << endl;
+	LastShow = clock();
 }
 
 void TaskRec() 
@@ -78,13 +100,17 @@ void TaskRec()
 			string recived = ch_tostr(buffer, 40);
 			if (buffer[0] == '#')
 			{	
-				me.c.x = stoi(split(recived, "/", 2));
-				me.c.y = stoi(split(recived, "/", 3));
+				ForMeCalc_c.x = stoi(split(recived, "/", 2));
+				ForMeCalc_c.y = stoi(split(recived, "/", 3));
 				MyOldTime = split(recived, "/", 4);
-				me.speed.angle = float(stoi(split(recived, "/", 5))) / 100;
-				me.speed.value = stoi(split(recived, "/", 6));
+				ForMeCalc_d.angle = float(stoi(split(recived, "/", 5))) / 100;
+				ForMeCalc_d.value = stoi(split(recived, "/", 6));
+				GuiPacketNum = split(recived, "/", 7);
+				MyOldPacketNum = split(recived, "/", 8);
 
-				gotmail = true;
+				//cout << "Get: ";
+				//showt(GuiPacketNum);
+
 				try
 				{
 					ping = clock() - stoi(MyOldTime);
@@ -93,13 +119,26 @@ void TaskRec()
 				{
 					cout << "APE OF SHIT" << endl;
 				}
+				if (me.speed.value == 0)
+				{
+					me.c.x = ForMeCalc_c.x;
+					me.c.y = ForMeCalc_c.y;
+				}
+				else if (me.speed.angle != ForMeCalc_d.angle)
+				{
+
+					cout << "dir" << endl;
+				}
+				me.speed.angle = ForMeCalc_d.angle;
+				me.speed.value = ForMeCalc_d.value;
 			}
 			else
 			{
 				gui.getwasd(buffer);
 				GuiTime = split(recived, "/", 2);
+				gotmail = true;
+				Framecount.me = 0;
 			}
-	
 		}
 		else 
 		{
@@ -112,19 +151,24 @@ void TaskSendData()
 {
 	while (1)
 	{
-		if (gotmail || clock() - gotmailtime > 1000)
+		/*if (gotmail || clock() - gotmailtime > 1000)
 		{
 			/*if(gotmail)cout << "send" << endl;
 			else cout << "send	time" << endl;*/
 
+			packet_num++;
 			string msg = "#";
-			msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle*100)) + "/" + to_string(int(gui.speed.value)) + "/";
+			msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle*100)) + "/" 
+				+ to_string(int(gui.speed.value)) + "/" + to_string(packet_num) + "/"  + GuiPacketNum + "/" + to_string(Framecount.me) + "/";
 			sendto(connectSocket, msg.c_str(), 40, 0, (sockaddr*)&otherAddr, otherSize);
+
+			//cout << "send: ";
+			//showt(to_string(packet_num));
 
 			gotmail = false;
 			gotmailtime = clock();
-			Sleep(5);
-		}
+			Sleep(20);
+		//}
 	}
 }
 
@@ -135,15 +179,13 @@ void TaskSendInput()
 		string msg = ch_tostr(keys, 4);
 		msg += "/" + to_string(clock()) + "/";
 		sendto(connectSocket, msg.c_str(), 20, 0, (sockaddr*)&otherAddr, otherSize);
-		Sleep(10);
+		Sleep(20);
 	}
 }
 
 
 int main(int argc, char* argv[])
 {
-	//cout << stoi("  36?5d") << endl;
-
 	SetConsoleTitleA("Client");
 
 	WSADATA wsaData;
@@ -171,7 +213,7 @@ int main(int argc, char* argv[])
 	setsockopt(connectSocket, SOL_SOCKET, SO_RCVBUF, (char*)&val, sizeof(val));
 
 	string request = "1";
-	cout << "Identificationnumber: ";  cin >> request;
+	//cout << "Identificationnumber: ";  cin >> request;
 
 	sendto(connectSocket, request.c_str(), request.length(), 0, (sockaddr*)&serverAddr, serverSize);
 

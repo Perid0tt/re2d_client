@@ -6,6 +6,8 @@
 #include "physics.h"
 #include "convert.h"
 
+#define FRAMELENGH = 16.66666666;
+
 using namespace std;
 
 void WindowSetup(int, int, int, int);

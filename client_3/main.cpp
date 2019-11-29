@@ -25,6 +25,8 @@ int otherSize;
 string GuiTime = "0";
 string MyOldTime = "0";
 int ping = 0;
+int lastping = 0;
+int prevping[10];
 bool gotmail = 0;
 int gotmailtime;
 int packet_num = 0;
@@ -34,7 +36,7 @@ int LastShow = 0;
 dualnet_int Framecount;
 coord ForMeCalc_c;
 dir ForMeCalc_d;
-bool ConnectedToGui = false;
+int ConnectToGuiFase = 0;
 
 extern char keys[];
 extern player gui;
@@ -65,16 +67,20 @@ void writeconsole()
 	cout << "CONNECTING";
 	while (1)
 	{
-		if (!ConnectedToGui)
+		switch (ConnectToGuiFase)
 		{
-			if (ping != 0)
-			{
+		case 0:
+			cout << ".";
+			break;
+		case 1:
 				cout << "\nCONNECTED \n\n";
-				ConnectedToGui = true;
-			}
-			else cout << ".";
+				Sleep(1000);
+				ConnectToGuiFase = 2;
+				break;
+		case 2:
+			//cout << ping << endl;
+			break;
 		}
-		//cout << ping << endl;
 		Sleep(100);
 	}
 }
@@ -85,8 +91,22 @@ void showt(string output)
 	LastShow = clock();
 }
 
+int calcping()
+{
+	int tempping = 0;
+	for (int i = 9; i > 0; i--)
+	{
+		prevping[i] = prevping[i - 1];
+		tempping += prevping[i];
+	}
+	prevping[0] = lastping;
+	tempping += prevping[0];
+	return (tempping / 10);
+}
+
 void TaskRec() 
 {
+	int PingCalcTime = 0;
 	while (true) 
 	{
 		SOCKADDR_IN remoteAddr;
@@ -96,6 +116,7 @@ void TaskRec()
 
 		if (iResult > 0) 
 		{
+			if (ConnectToGuiFase == 0)ConnectToGuiFase = 1;
 			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
 			string recived = ch_tostr(buffer, 40);
 			if (buffer[0] == '#')
@@ -108,26 +129,29 @@ void TaskRec()
 				GuiPacketNum = split(recived, "/", 7);
 				MyOldPacketNum = split(recived, "/", 8);
 
-				//cout << "Get: ";
-				//showt(GuiPacketNum);
-
 				try
 				{
-					ping = clock() - stoi(MyOldTime);
+					lastping = clock() - stoi(MyOldTime);
 				}
-				catch (...) 
+				catch (...)
 				{
-					cout << "APE OF SHIT" << endl;
+					//cout << "APE OF SHIT" << endl;
 				}
-				if (me.speed.value == 0)
+				ping = calcping();
+				
+				if (ForMeCalc_d.value == 0 && me.speed.value != 0)
 				{
+					//cout << "stop " << abs(me.c.x - ForMeCalc_c.x) << " " << abs(me.c.y - ForMeCalc_c.y) << endl;
 					me.c.x = ForMeCalc_c.x;
 					me.c.y = ForMeCalc_c.y;
 				}
 				else if (me.speed.angle != ForMeCalc_d.angle)
 				{
-
-					cout << "dir" << endl;
+					//cout << abs(me.c.x - ForMeCalc_c.x) << " " << abs(me.c.y - ForMeCalc_c.y) << endl;
+					cout << "dif  " << sqrt(pow(me.c.x - ForMeCalc_c.x, 2) + pow(me.c.y - ForMeCalc_c.y, 2)) << endl;
+					cout << "calc " << ping * ForMeCalc_d.value / (2 * 16.6667) << endl;
+					me.c.x = ForMeCalc_c.x;
+					me.c.y = ForMeCalc_c.y;
 				}
 				me.speed.angle = ForMeCalc_d.angle;
 				me.speed.value = ForMeCalc_d.value;
@@ -182,7 +206,6 @@ void TaskSendInput()
 		Sleep(20);
 	}
 }
-
 
 int main(int argc, char* argv[])
 {

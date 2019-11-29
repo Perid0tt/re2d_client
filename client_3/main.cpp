@@ -38,6 +38,9 @@ coord ForMeCalc_c;
 dir ForMeCalc_d;
 int ConnectToGuiFase = 0;
 
+float difsum = 0;
+int difcount = 0;
+
 extern char keys[];
 extern player gui;
 extern player me;
@@ -78,7 +81,7 @@ void writeconsole()
 				ConnectToGuiFase = 2;
 				break;
 		case 2:
-			//cout << ping << endl;
+			cout << "ping: " << ping << endl;
 			break;
 		}
 		Sleep(100);
@@ -142,14 +145,20 @@ void TaskRec()
 				if (ForMeCalc_d.value == 0 && me.speed.value != 0)
 				{
 					//cout << "stop " << abs(me.c.x - ForMeCalc_c.x) << " " << abs(me.c.y - ForMeCalc_c.y) << endl;
+
 					me.c.x = ForMeCalc_c.x;
 					me.c.y = ForMeCalc_c.y;
 				}
 				else if (me.speed.angle != ForMeCalc_d.angle)
 				{
+
 					//cout << abs(me.c.x - ForMeCalc_c.x) << " " << abs(me.c.y - ForMeCalc_c.y) << endl;
-					cout << "dif  " << sqrt(pow(me.c.x - ForMeCalc_c.x, 2) + pow(me.c.y - ForMeCalc_c.y, 2)) << endl;
-					cout << "calc " << ping * ForMeCalc_d.value / (2 * 16.6667) << endl;
+					//cout << "dif  " << sqrt(pow(me.c.x - ForMeCalc_c.x, 2) + pow(me.c.y - ForMeCalc_c.y, 2)) << endl;
+					difsum += sqrt(pow(me.c.x - ForMeCalc_c.x, 2) + pow(me.c.y - ForMeCalc_c.y, 2));
+					difcount++;
+					//cout << difsum / difcount << endl;
+					//cout << "calc " << ping * ForMeCalc_d.value / (2 * 16.6667) << endl;
+
 					me.c.x = ForMeCalc_c.x;
 					me.c.y = ForMeCalc_c.y;
 				}

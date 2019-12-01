@@ -5,6 +5,7 @@
 #include <iostream>
 #include "physics.h"
 #include "convert.h"
+#include <ctime>
 
 #define FRAMELENGH = 16.66666666;
 

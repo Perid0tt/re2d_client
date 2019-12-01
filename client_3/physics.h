@@ -51,7 +51,7 @@ public:
 		if (y == 0 && x == -1) speed.angle = M_PI;
 		if (y == 1 && x == -1) speed.angle = M_PI_4 * 3;
 
-		if (x != 0 || y != 0) speed.value = 0.5;
+		if (x != 0 || y != 0) speed.value = 3;
 		else speed.value = 0;
 	}
 	void MoveToSpeed()
@@ -66,4 +66,4 @@ public:
 	}
 };
 
-void physics();
+void setphysics();

@@ -9,6 +9,11 @@ extern player me;
 extern dualnet_int Framecount;
 extern  coord ForMeCalc_c;
 
+const int FRAMES_PER_SECOND = 60;
+int frame = 0;
+bool cap = true;
+int frametime;
+
 void WindowSetup(int xpos, int ypos, int weidth, int height)
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -27,6 +32,8 @@ void GraphicsWindow()
 	me.MoveToCord(250, 250);
 	while (1)
 	{
+		frametime = clock();
+
 		while (SDL_PollEvent(&e))
 		{
 			switch (e.type)
@@ -46,10 +53,11 @@ void GraphicsWindow()
 			}
 		}
 
+		setphysics();
+
 		fill_circle(renderer, gui.c.x, gui.c.y, 25, 255, 0, 0, 255);
 		fill_circle(renderer, me.c.x, me.c.y, 25, 0, 255, 0, 255);
 		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 255, 255, 255);
-
 
 		SDL_RenderPresent(renderer);
 		a++;
@@ -58,7 +66,10 @@ void GraphicsWindow()
 		SDL_RenderClear(renderer);
 
 		Framecount.me++;
-		SDL_Delay(1);
+		frame++;
+		
+		if ((cap == true) && (clock() - frametime < 1000 / FRAMES_PER_SECOND))
+			SDL_Delay((1000 / FRAMES_PER_SECOND) - (clock() - frametime));
 	}
 }
 

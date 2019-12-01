@@ -292,7 +292,6 @@ int main(int argc, char* argv[])
 	thread t2(TaskSendData);
 	thread t3(TaskSendInput);
 	thread t4(writeconsole);
-	thread t5(physics);
 
 	WindowSetup(1030, 150, 500, 500);
 	GraphicsWindow();

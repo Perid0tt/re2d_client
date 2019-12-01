@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
+#include <windows.h>
 
 using namespace std;
 
@@ -50,7 +51,7 @@ public:
 		if (y == 0 && x == -1) speed.angle = M_PI;
 		if (y == 1 && x == -1) speed.angle = M_PI_4 * 3;
 
-		if (x != 0 || y != 0) speed.value = 3;
+		if (x != 0 || y != 0) speed.value = 0.5;
 		else speed.value = 0;
 	}
 	void MoveToSpeed()
@@ -65,4 +66,4 @@ public:
 	}
 };
 
-void setphysics();
+void physics();

@@ -46,7 +46,6 @@ void GraphicsWindow()
 			}
 		}
 
-		setphysics();
 		fill_circle(renderer, gui.c.x, gui.c.y, 25, 255, 0, 0, 255);
 		fill_circle(renderer, me.c.x, me.c.y, 25, 0, 255, 0, 255);
 		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 255, 255, 255);

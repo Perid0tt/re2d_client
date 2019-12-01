@@ -128,7 +128,7 @@ void TaskRec()
 				ForMeCalc_c.y = stoi(split(recived, "/", 3));
 				MyOldTime = split(recived, "/", 4);
 				ForMeCalc_d.angle = float(stoi(split(recived, "/", 5))) / 100;
-				ForMeCalc_d.value = stoi(split(recived, "/", 6));
+				ForMeCalc_d.value = float(stoi(split(recived, "/", 6))) / 100;
 				GuiPacketNum = split(recived, "/", 7);
 				MyOldPacketNum = split(recived, "/", 8);
 
@@ -192,7 +192,7 @@ void TaskSendData()
 			packet_num++;
 			string msg = "#";
 			msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle*100)) + "/" 
-				+ to_string(int(gui.speed.value)) + "/" + to_string(packet_num) + "/"  + GuiPacketNum + "/" + to_string(Framecount.me) + "/";
+				+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/"  + GuiPacketNum + "/" + to_string(Framecount.me) + "/";
 			sendto(connectSocket, msg.c_str(), 40, 0, (sockaddr*)&otherAddr, otherSize);
 
 			//cout << "send: ";
@@ -292,6 +292,7 @@ int main(int argc, char* argv[])
 	thread t2(TaskSendData);
 	thread t3(TaskSendInput);
 	thread t4(writeconsole);
+	thread t5(physics);
 
 	WindowSetup(1030, 150, 500, 500);
 	GraphicsWindow();

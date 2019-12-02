@@ -14,7 +14,7 @@
 #pragma comment(lib,"ws2_32.lib")
 using namespace std;
 
-const int BUFFERLENGTH = 40;
+const int BUFFERLENGTH = 1024;
 const int SERVERPORT = 1707;
 const string SERVERIP = "78.24.219.108";
 char buffer[BUFFERLENGTH];
@@ -34,9 +34,9 @@ string GuiPacketNum = "0";
 string MyOldPacketNum = "0";
 int LastShow = 0;
 dualnet_int Framecount;
-coord ForMeCalc_c;
-dir ForMeCalc_d;
 int ConnectToGuiFase = 0;
+vector<coord> ForMeCalc_c;
+vector<dir> ForMeCalc_d;
 
 extern char keys[];
 extern player gui;
@@ -100,6 +100,11 @@ int calcping()
 
 void TaskRec() 
 {
+	vector<coord>().swap(ForMeCalc_c);
+	ForMeCalc_c.resize(1);
+	vector<dir>().swap(ForMeCalc_d);
+	ForMeCalc_d.resize(1);
+
 	int PingCalcTime = 0;
 	while (true) 
 	{
@@ -128,13 +133,35 @@ void TaskRec()
 
 			if (buffer[0] == '#')
 			{	
-				ForMeCalc_c.x = stoi(split(recived, "/", 2));
-				ForMeCalc_c.y = stoi(split(recived, "/", 3));
+				cout << recived << endl;
+
+				ForMeCalc_c[0].x = stoi(split(recived, "/", 2));
+				ForMeCalc_c[0].y = stoi(split(recived, "/", 3));
 				MyOldTime = split(recived, "/", 4);
-				ForMeCalc_d.angle = float(stoi(split(recived, "/", 5))) / 100;
-				ForMeCalc_d.value = float(stoi(split(recived, "/", 6))) / 100;
+				ForMeCalc_d[0].angle = float(stoi(split(recived, "/", 5))) / 100;
+				ForMeCalc_d[0].value = float(stoi(split(recived, "/", 6))) / 100;
 				GuiPacketNum = split(recived, "/", 7);
 				MyOldPacketNum = split(recived, "/", 8);
+
+				me.dobj_num = stoi(split(recived, "/", 9));
+				ForMeCalc_c.resize(me.dobj_num + 1);
+				ForMeCalc_d.resize(me.dobj_num + 1);
+				for (int i = 0; i < me.dobj_num; i++)
+				{
+					me.dobj[i].type = stoi(split(recived, "/", 10 + i*5));
+					ForMeCalc_c[i + 1].x = stoi(split(recived, "/", 11 + i * 5));
+					ForMeCalc_c[i + 1].y = stoi(split(recived, "/", 12 + i * 5));
+					ForMeCalc_d[i + 1].angle = float(stoi(split(recived, "/", 13 + i * 5))) / 100;
+					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", 14 + i * 5))) / 100;
+
+					if ((ForMeCalc_d[i + 1].value == 0) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
+					{
+						me.dobj[i].c.x = ForMeCalc_c[0].x;
+						me.dobj[i].c.y = ForMeCalc_c[0].y;
+					}
+					me.dobj[i].speed.angle = ForMeCalc_d[i + 1].angle;
+					me.dobj[i].speed.value = ForMeCalc_d[i + 1].value;
+				}
 
 				try
 				{
@@ -146,18 +173,13 @@ void TaskRec()
 				}
 				ping = calcping();
 				
-				if (ForMeCalc_d.value == 0 && me.speed.value != 0)
+				if ((ForMeCalc_d[0].value == 0) || (me.speed.angle != ForMeCalc_d[0].angle))
 				{
-					me.c.x = ForMeCalc_c.x;
-					me.c.y = ForMeCalc_c.y;
+					me.c.x = ForMeCalc_c[0].x;
+					me.c.y = ForMeCalc_c[0].y;
 				}
-				else if (me.speed.angle != ForMeCalc_d.angle)
-				{
-					me.c.x = ForMeCalc_c.x;
-					me.c.y = ForMeCalc_c.y;
-				}
-				me.speed.angle = ForMeCalc_d.angle;
-				me.speed.value = ForMeCalc_d.value;
+				me.speed.angle = ForMeCalc_d[0].angle;
+				me.speed.value = ForMeCalc_d[0].value;
 			}
 			else
 			{
@@ -177,11 +199,16 @@ void TaskSendData()
 		packet_num++;
 		string msg = "#";
 		msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle * 100)) + "/"
-			+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/";
+			+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/" + to_string(gui.dobj_num) + '/';
 
-		//cout << "snd: " << msg.length() <<endl;
+		for (int i = 0; i < gui.dobj_num; i++)
+		{
+			msg += to_string(gui.dobj[i].type) + "/"
+				+ to_string(int(gui.dobj[i].c.x)) + "/" + to_string(int(gui.dobj[i].c.y)) + "/" 
+				+ to_string(int(gui.dobj[i].speed.angle * 100)) + "/" + to_string(int(gui.dobj[i].speed.value * 100)) + "/";
+		}
+
 		msg += "$" + to_string(msg.length()) + "&" + "/";
-
 		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
 
 		gotmail = false;

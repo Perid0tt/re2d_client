@@ -5,8 +5,8 @@ player me;
 
 void initialphysics()
 {
-	gui.MoveToCord(400, 400);
-	me.MoveToCord(400, 400);
+	gui = player(400, 400);
+	me = player(400, 400);
 }
 
 void setphysics()
@@ -14,4 +14,8 @@ void setphysics()
 	me.MoveToSpeed();
 	gui.setspeed();
 	gui.MoveToSpeed();
+
+	me.MoveDobj();
+	gui.MoveDobj();
+	gui.SetDobj();
 }

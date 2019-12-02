@@ -54,7 +54,12 @@ void GraphicsWindow()
 
 		fill_circle(renderer, gui.c.x, gui.c.y, 25, 255, 0, 0, 255);
 		fill_circle(renderer, me.c.x, me.c.y, 25, 0, 255, 0, 255);
-		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 255, 255, 255);
+		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 0, 255, 255);
+
+		for (int i = 0; i < gui.dobj_num; i++)
+			fill_circle(renderer, gui.dobj[i].c.x + 10*cos(gui.dobj[i].speed.angle), gui.dobj[i].c.y + 10 * sin(gui.dobj[i].speed.angle), 5, 0, 200, 200, 255);
+		for (int i = 0; i < me.dobj_num; i++)
+			fill_circle(renderer, me.dobj[i].c.x + 10 * cos(me.dobj[i].speed.angle), me.dobj[i].c.y + 10 * sin(me.dobj[i].speed.angle), 5, 200, 0, 200, 255);
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(1);

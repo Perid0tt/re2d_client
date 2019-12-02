@@ -20,18 +20,54 @@ struct dir
 	float angle = 0, value = 0;
 };
 
-class DinamicObj
+enum DobjType
 {
-	coord c;
-	dir speed;
-
+	null,
+	ball,
+	bullet
 };
 
-class player
+
+class DinamicObj
 {
 public:
 	coord c;
 	dir speed;
+	int type = ball;
+	bool taken = true;
+
+	void setmove(coord cord, dir spd)
+	{
+		if (taken)
+		{
+			c = cord;
+			speed = spd;
+		}
+	}
+	void move()
+	{
+		c.x += speed.value * cos(speed.angle);
+		c.y += speed.value * sin(speed.angle);
+	}
+};
+
+
+class player
+{
+public:
+	player()
+	{
+		InitDobj();
+	}
+	player(int x, int y)
+	{
+		InitDobj();
+		MoveToCord(x, y);
+	}
+
+	coord c;
+	dir speed;
+	int a = 5;
 	bool wasd[4] = { 0,0,0,0 };
 	void getwasd(char C_wasd[])
 	{
@@ -75,11 +111,27 @@ public:
 	}
 
 	vector<DinamicObj> dobj;
+	int dobj_num = 1;
 	void InitDobj()
 	{
 		vector<DinamicObj>().swap(dobj);
-		dobj.resize(2);
-
+		dobj.resize(dobj_num);
+	}
+	void SetDobj()
+	{
+		dobj.resize(dobj_num);
+		for (int i = 0; i < dobj_num; i++)
+		{
+			dobj[i].setmove(c, speed);
+		}
+	}
+	void MoveDobj()
+	{
+		dobj.resize(dobj_num);
+		for (int i = 0; i < dobj_num; i++)
+		{
+			dobj[i].move();
+		}
 	}
 };
 

@@ -14,3 +14,5 @@ struct dualnet_string
 string ch_tostr(char*, int);
 
 string split(string, string, int);
+
+double okr(double, unsigned int);

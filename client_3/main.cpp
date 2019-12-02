@@ -38,9 +38,6 @@ coord ForMeCalc_c;
 dir ForMeCalc_d;
 int ConnectToGuiFase = 0;
 
-float difsum = 0;
-int difcount = 0;
-
 extern char keys[];
 extern player gui;
 extern player me;
@@ -81,17 +78,11 @@ void writeconsole()
 				ConnectToGuiFase = 2;
 				break;
 		case 2:
-			cout << "ping: " << ping << endl;
+			//cout << "ping: " << ping << endl;
 			break;
 		}
 		Sleep(100);
 	}
-}
-
-void showt(string output)
-{
-	cout << output << " : " << clock() - LastShow << endl;
-	LastShow = clock();
 }
 
 int calcping()
@@ -114,14 +105,27 @@ void TaskRec()
 	{
 		SOCKADDR_IN remoteAddr;
 		int	remoteAddrLen = sizeof(remoteAddr);
-
 		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
 
 		if (iResult > 0) 
 		{
-			if (ConnectToGuiFase == 0)ConnectToGuiFase = 1;
+			if (ConnectToGuiFase == 0) ConnectToGuiFase = 1;
 			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
-			string recived = ch_tostr(buffer, 40);
+
+			int byte_num_lengh;
+			string recv_lengh;
+			for (int i = 0; true; i++)
+			{
+				if (buffer[i] == '$')
+				{
+					byte_num_lengh = i + 1;
+					break;
+				}
+			}
+			for (int i = byte_num_lengh; buffer[i] != '&'; i++)
+				recv_lengh[i - byte_num_lengh] = buffer[i];
+			string recived = ch_tostr(buffer, stoi(recv_lengh));
+
 			if (buffer[0] == '#')
 			{	
 				ForMeCalc_c.x = stoi(split(recived, "/", 2));
@@ -144,21 +148,11 @@ void TaskRec()
 				
 				if (ForMeCalc_d.value == 0 && me.speed.value != 0)
 				{
-					//cout << "stop " << abs(me.c.x - ForMeCalc_c.x) << " " << abs(me.c.y - ForMeCalc_c.y) << endl;
-
 					me.c.x = ForMeCalc_c.x;
 					me.c.y = ForMeCalc_c.y;
 				}
 				else if (me.speed.angle != ForMeCalc_d.angle)
 				{
-
-					//cout << abs(me.c.x - ForMeCalc_c.x) << " " << abs(me.c.y - ForMeCalc_c.y) << endl;
-					//cout << "dif  " << sqrt(pow(me.c.x - ForMeCalc_c.x, 2) + pow(me.c.y - ForMeCalc_c.y, 2)) << endl;
-					difsum += sqrt(pow(me.c.x - ForMeCalc_c.x, 2) + pow(me.c.y - ForMeCalc_c.y, 2));
-					difcount++;
-					//cout << difsum / difcount << endl;
-					//cout << "calc " << ping * ForMeCalc_d.value / (2 * 16.6667) << endl;
-
 					me.c.x = ForMeCalc_c.x;
 					me.c.y = ForMeCalc_c.y;
 				}
@@ -173,10 +167,6 @@ void TaskRec()
 				Framecount.me = 0;
 			}
 		}
-		else 
-		{
-			//cout << "Error" << endl;
-		}
 	}
 }
 
@@ -184,24 +174,19 @@ void TaskSendData()
 {
 	while (1)
 	{
-		/*if (gotmail || clock() - gotmailtime > 1000)
-		{
-			/*if(gotmail)cout << "send" << endl;
-			else cout << "send	time" << endl;*/
+		packet_num++;
+		string msg = "#";
+		msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle * 100)) + "/"
+			+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/";
 
-			packet_num++;
-			string msg = "#";
-			msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle*100)) + "/" 
-				+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/"  + GuiPacketNum + "/" + to_string(Framecount.me) + "/";
-			sendto(connectSocket, msg.c_str(), 40, 0, (sockaddr*)&otherAddr, otherSize);
+		//cout << "snd: " << msg.length() <<endl;
+		msg += "$" + to_string(msg.length()) + "&" + "/";
 
-			//cout << "send: ";
-			//showt(to_string(packet_num));
+		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
 
-			gotmail = false;
-			gotmailtime = clock();
-			Sleep(20);
-		//}
+		gotmail = false;
+		gotmailtime = clock();
+		Sleep(20);
 	}
 }
 
@@ -211,7 +196,9 @@ void TaskSendInput()
 	{
 		string msg = ch_tostr(keys, 4);
 		msg += "/" + to_string(clock()) + "/";
-		sendto(connectSocket, msg.c_str(), 20, 0, (sockaddr*)&otherAddr, otherSize);
+		msg += "$" + to_string(msg.length()) + "&" + "/";
+
+		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
 		Sleep(20);
 	}
 }
@@ -293,7 +280,9 @@ int main(int argc, char* argv[])
 	thread t3(TaskSendInput);
 	thread t4(writeconsole);
 
-	WindowSetup(1030, 150, 500, 500);
+	initialphysics();
+
+	WindowSetup(1030, 150, 800, 800);
 	GraphicsWindow();
 
 	getchar();

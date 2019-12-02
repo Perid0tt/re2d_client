@@ -3,10 +3,12 @@
 #include <math.h>
 #include <iostream>
 #include <windows.h>
+#include <vector>
+#include "convert.h"
+
 
 using namespace std;
 
-double okr(double, unsigned int);
 
 struct coord
 {
@@ -15,7 +17,14 @@ struct coord
 
 struct dir
 {
-	float angle, value;
+	float angle = 0, value = 0;
+};
+
+class DinamicObj
+{
+	coord c;
+	dir speed;
+
 };
 
 class player
@@ -64,6 +73,15 @@ public:
 		c.x = x;
 		c.y = y;
 	}
+
+	vector<DinamicObj> dobj;
+	void InitDobj()
+	{
+		vector<DinamicObj>().swap(dobj);
+		dobj.resize(2);
+
+	}
 };
 
 void setphysics();
+void initialphysics();

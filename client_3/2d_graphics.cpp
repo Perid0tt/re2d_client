@@ -27,9 +27,6 @@ void GraphicsWindow()
 {
 	SDL_Renderer *renderer = rendererg;
 	SDL_Event e;
-	int a = 0;
-	gui.MoveToCord(250, 250);
-	me.MoveToCord(250, 250);
 	while (1)
 	{
 		frametime = clock();
@@ -60,7 +57,6 @@ void GraphicsWindow()
 		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 255, 255, 255);
 
 		SDL_RenderPresent(renderer);
-		a++;
 		SDL_Delay(1);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);

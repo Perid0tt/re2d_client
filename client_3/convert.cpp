@@ -30,3 +30,8 @@ string split(string s, string delimiter, int number)
 	if (sovpad)return token;
 	else return s;
 }
+
+double okr(double number, unsigned int accuracy)
+{
+	return double(int(number * pow(10, accuracy))) / pow(10, accuracy);
+}

@@ -154,10 +154,10 @@ void TaskRec()
 					ForMeCalc_d[i + 1].angle = float(stoi(split(recived, "/", 13 + i * 5))) / 100;
 					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", 14 + i * 5))) / 100;
 
-					if ((ForMeCalc_d[i + 1].value == 0) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
+					if ((ForMeCalc_d[i + 1].value == 0 && me.dobj[i].speed.value != ForMeCalc_d[i + 1].value) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
 					{
-						me.dobj[i].c.x = ForMeCalc_c[0].x;
-						me.dobj[i].c.y = ForMeCalc_c[0].y;
+						me.dobj[i].c.x = ForMeCalc_c[i + 1].x;
+						me.dobj[i].c.y = ForMeCalc_c[i + 1].y;
 					}
 					me.dobj[i].speed.angle = ForMeCalc_d[i + 1].angle;
 					me.dobj[i].speed.value = ForMeCalc_d[i + 1].value;
@@ -173,7 +173,7 @@ void TaskRec()
 				}
 				ping = calcping();
 				
-				if ((ForMeCalc_d[0].value == 0) || (me.speed.angle != ForMeCalc_d[0].angle))
+				if ((ForMeCalc_d[0].value == 0 ) || (me.speed.angle != ForMeCalc_d[0].angle))
 				{
 					me.c.x = ForMeCalc_c[0].x;
 					me.c.y = ForMeCalc_c[0].y;
@@ -183,7 +183,9 @@ void TaskRec()
 			}
 			else
 			{
-				gui.getwasd(buffer);
+				//cout << recived << endl;
+
+				gui.getkeys(buffer);
 				GuiTime = split(recived, "/", 2);
 				gotmail = true;
 				Framecount.me = 0;
@@ -221,7 +223,7 @@ void TaskSendInput()
 {
 	while (1)
 	{
-		string msg = ch_tostr(keys, 4);
+		string msg = ch_tostr(keys, 6);
 		msg += "/" + to_string(clock()) + "/";
 		msg += "$" + to_string(msg.length()) + "&" + "/";
 

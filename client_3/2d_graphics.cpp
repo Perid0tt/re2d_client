@@ -1,8 +1,7 @@
 #include "2d_graphics.h"
 
-
 SDL_Renderer *rendererg;
-char keys[4] = { '-','-','-','-' };
+char keys[6] = { '-','-','-','-','-','-' };
 
 extern player gui;
 extern player me;
@@ -13,6 +12,7 @@ const int FRAMES_PER_SECOND = 60;
 int frame = 0;
 bool cap = true;
 int frametime;
+SDL_Event sev;
 
 void WindowSetup(int xpos, int ypos, int weidth, int height)
 {
@@ -23,32 +23,44 @@ void WindowSetup(int xpos, int ypos, int weidth, int height)
 	rendererg = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
+void GetInput(SDL_Event e)
+{
+	while (SDL_PollEvent(&e))
+	{
+		switch (e.type)
+		{
+		case SDL_KEYDOWN:
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 26)keys[0] = 'w';
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 4)keys[1] = 'a';
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 22)keys[2] = 's';
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 7)keys[3] = 'd';
+			break;
+		case SDL_KEYUP:
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 26)keys[0] = '-';
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 4)keys[1] = '-';
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 22)keys[2] = '-';
+			if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 7)keys[3] = '-';
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			if (e.button.button == SDL_BUTTON_LEFT)keys[4] = '<';
+			if (e.button.button == SDL_BUTTON_RIGHT)keys[5] = '>';
+			break;
+		case SDL_MOUSEBUTTONUP:
+			if (e.button.button == SDL_BUTTON_LEFT)keys[4] = '-';
+			if (e.button.button == SDL_BUTTON_RIGHT)keys[5] = '-';
+			break;
+		}
+	}
+}
+
 void GraphicsWindow()
 {
 	SDL_Renderer *renderer = rendererg;
-	SDL_Event e;
 	while (1)
 	{
 		frametime = clock();
 
-		while (SDL_PollEvent(&e))
-		{
-			switch (e.type)
-			{
-			case SDL_KEYDOWN:
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 26)keys[0] = 'w';
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 4)keys[1] = 'a';
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 22)keys[2] = 's';
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 7)keys[3] = 'd';
-				break;
-			case SDL_KEYUP:
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 26)keys[0] = '-';
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 4)keys[1] = '-';
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 22)keys[2] = '-';
-				if (SDL_GetScancodeFromKey(e.key.keysym.sym) == 7)keys[3] = '-';
-				break;
-			}
-		}
+		GetInput(sev);
 
 		setphysics();
 
@@ -57,9 +69,9 @@ void GraphicsWindow()
 		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 0, 255, 255);
 
 		for (int i = 0; i < gui.dobj_num; i++)
-			fill_circle(renderer, gui.dobj[i].c.x + 10*cos(gui.dobj[i].speed.angle), gui.dobj[i].c.y + 10 * sin(gui.dobj[i].speed.angle), 5, 0, 200, 200, 255);
+			fill_circle(renderer, gui.dobj[i].c.x, gui.dobj[i].c.y, 5, 0, 200, 200, 255);
 		for (int i = 0; i < me.dobj_num; i++)
-			fill_circle(renderer, me.dobj[i].c.x + 10 * cos(me.dobj[i].speed.angle), me.dobj[i].c.y + 10 * sin(me.dobj[i].speed.angle), 5, 200, 0, 200, 255);
+			fill_circle(renderer, me.dobj[i].c.x, me.dobj[i].c.y, 5, 200, 0, 200, 255);
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(1);

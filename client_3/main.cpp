@@ -146,6 +146,7 @@ void TaskRec()
 				me.dobj_num = stoi(split(recived, "/", 9));
 				ForMeCalc_c.resize(me.dobj_num + 1);
 				ForMeCalc_d.resize(me.dobj_num + 1);
+				me.dobj.resize(me.dobj_num);
 				for (int i = 0; i < me.dobj_num; i++)
 				{
 					me.dobj[i].type = stoi(split(recived, "/", 10 + i*5));

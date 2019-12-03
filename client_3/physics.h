@@ -9,7 +9,6 @@
 
 using namespace std;
 
-
 struct coord
 {
 	float x = 0, y = 0;
@@ -20,6 +19,8 @@ struct dir
 	float angle = 0, value = 0;
 };
 
+bool InDistance(float, coord, coord);
+
 enum DobjType
 {
 	null,
@@ -27,14 +28,13 @@ enum DobjType
 	bullet
 };
 
-
 class DinamicObj
 {
 public:
 	coord c;
 	dir speed;
 	int type = ball;
-	bool taken = true;
+	bool taken = 1;
 
 	void setmove(coord cord, dir spd)
 	{
@@ -49,9 +49,22 @@ public:
 	{
 		c.x += speed.value * cos(speed.angle);
 		c.y += speed.value * sin(speed.angle);
+		if (c.x < 0)c.x = 0;
+		if (c.x > 800)c.x = 800;
+		if (c.y < 0)c.y = 0;
+		if (c.y > 800)c.y = 800;
+	}
+
+	DinamicObj& operator = (DinamicObj origin)
+	{
+		c = origin.c;
+		speed = origin.speed;
+		type = origin.type;
+		taken = origin.taken;
+
+		return *this;
 	}
 };
-
 
 class player
 {
@@ -121,6 +134,11 @@ public:
 	{
 		vector<DinamicObj>().swap(dobj);
 		dobj.resize(dobj_num);
+
+		dobj[0].c.x = rand() % 800;
+		dobj[0].c.y = rand() % 800;
+		//dobj[1].c.x = rand() % 800;
+		//dobj[1].c.y = rand() % 800;
 	}
 	void SetDobj()
 	{
@@ -128,7 +146,11 @@ public:
 		for (int i = 0; i < dobj_num; i++)
 		{
 			if (key[4]) dobj[i].taken = false;
-			if (key[5]) dobj[i].taken = true;
+			if (key[5])
+			{
+				if(InDistance(25, c, dobj[i].c))
+				dobj[i].taken = true;
+			}
 			dobj[i].setmove(c, speed);
 		}
 	}
@@ -139,6 +161,13 @@ public:
 		{
 			dobj[i].move();
 		}
+	}
+	void DestroyDobj(int count)
+	{
+		dobj_num--;
+		for (int i = count; i < dobj_num; i++)
+			dobj[i] = dobj[i + 1];
+		dobj.resize(dobj_num);
 	}
 };
 

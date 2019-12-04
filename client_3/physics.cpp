@@ -4,6 +4,8 @@ player gui;
 player me;
 
 bool pressed = false;
+extern dualnet_int killdobjnum;
+extern dualnet_bool dobjkilled;
 
 void initialphysics()
 {
@@ -13,17 +15,18 @@ void initialphysics()
 
 void CheckForeginDobjzz() //необходимое локальное вычисление (т к пока что только 2 игрока)
 {
+	if (dobjkilled.me)killdobjnum.me = -1;
 	if (gui.key[5] && !pressed)
 	{
 		pressed = true;
 		for (int i = 0; i < me.dobj_num; i++)
 		{
-			if (InDistance(25, gui.c, me.dobj[i].c))
+			if (InDistance(25, gui.c, me.dobj[i].c) && killdobjnum.me == -1)
 			{
-				//gui.dobj_num++;
-				//gui.dobj.resize(gui.dobj_num);
-				//gui.dobj[gui.dobj_num - 1] = me.dobj[i];
-				me.DestroyDobj(i);
+				gui.dobj_num++;
+				gui.dobj.resize(gui.dobj_num);
+				gui.dobj[gui.dobj_num - 1] = me.dobj[i];
+				killdobjnum.me = i;
 			}
 		}
 	}

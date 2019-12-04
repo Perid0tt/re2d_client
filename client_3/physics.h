@@ -130,7 +130,7 @@ public:
 	}
 
 	vector<DinamicObj> dobj;
-	int dobj_num = 3;
+	int dobj_num = 2;
 	void InitDobj()
 	{
 		vector<DinamicObj>().swap(dobj);

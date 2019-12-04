@@ -6,10 +6,16 @@ struct dualnet_int
 {
 	int gui, me;
 };
+struct dualnet_bool
+{
+	bool gui, me;
+};
 struct dualnet_string
 {
 	string gui, me;
 };
+
+bool stob(string str);
 
 string ch_tostr(char*, int);
 

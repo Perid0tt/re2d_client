@@ -42,6 +42,9 @@ extern char keys[];
 extern player gui;
 extern player me;
 
+dualnet_int killdobjnum;
+dualnet_bool dobjkilled;
+
 string NormalizedIPString(SOCKADDR_IN addr) {
 	char host[16];
 	ZeroMemory(host, 16);
@@ -104,6 +107,8 @@ void TaskRec()
 	ForMeCalc_c.resize(1);
 	vector<dir>().swap(ForMeCalc_d);
 	ForMeCalc_d.resize(1);
+	dobjkilled.me = false;
+	dobjkilled.gui = false;
 
 	int PingCalcTime = 0;
 	while (true) 
@@ -135,6 +140,7 @@ void TaskRec()
 			{	
 				cout << recived << endl;
 
+				const int varnum = 11;
 				ForMeCalc_c[0].x = stoi(split(recived, "/", 2));
 				ForMeCalc_c[0].y = stoi(split(recived, "/", 3));
 				MyOldTime = split(recived, "/", 4);
@@ -143,17 +149,27 @@ void TaskRec()
 				GuiPacketNum = split(recived, "/", 7);
 				MyOldPacketNum = split(recived, "/", 8);
 
-				//me.dobj_num = stoi(split(recived, "/", 9));
+				if (stoi(split(recived, "/", 10)) != killdobjnum.gui)dobjkilled.gui = false;
+				if (stoi(split(recived, "/", 10)) != -1 && !dobjkilled.gui)
+				{
+					gui.DestroyDobj(stoi(split(recived, "/", 10)));
+					dobjkilled.gui = true;
+				}
+				killdobjnum.gui = stoi(split(recived, "/", 10));
+
+				dobjkilled.me = stob(split(recived, "/", 11));
+
+				me.dobj_num = stoi(split(recived, "/", 9));
 				ForMeCalc_c.resize(me.dobj_num + 1);
 				ForMeCalc_d.resize(me.dobj_num + 1);
 				me.dobj.resize(me.dobj_num);
 				for (int i = 0; i < me.dobj_num; i++)
 				{
-					me.dobj[i].type = stoi(split(recived, "/", 10 + i*5));
-					ForMeCalc_c[i + 1].x = stoi(split(recived, "/", 11 + i * 5));
-					ForMeCalc_c[i + 1].y = stoi(split(recived, "/", 12 + i * 5));
-					ForMeCalc_d[i + 1].angle = float(stoi(split(recived, "/", 13 + i * 5))) / 100;
-					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", 14 + i * 5))) / 100;
+					me.dobj[i].type = stoi(split(recived, "/", varnum + 1 + i*5));
+					ForMeCalc_c[i + 1].x = stoi(split(recived, "/", varnum + 2 + i * 5));
+					ForMeCalc_c[i + 1].y = stoi(split(recived, "/", varnum + 3 + i * 5));
+					ForMeCalc_d[i + 1].angle = float(stoi(split(recived, "/", varnum + 4 + i * 5))) / 100;
+					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", varnum + 5 + i * 5))) / 100;
 
 					if ((ForMeCalc_d[i + 1].value == 0 /*&& me.dobj[i].speed.value != 0*/) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
 					{
@@ -202,7 +218,8 @@ void TaskSendData()
 		packet_num++;
 		string msg = "#";
 		msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle * 100)) + "/"
-			+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/" + to_string(gui.dobj_num) + '/';
+			+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/" + to_string(gui.dobj_num) + '/'
+			+ to_string(killdobjnum.me) + "/" + to_string(dobjkilled.gui) + "/";
 
 		for (int i = 0; i < gui.dobj_num; i++)
 		{
@@ -306,6 +323,11 @@ int main(int argc, char* argv[])
 	ioctlsocket(connectSocket, FIONBIO, &iMode);
 
 	gotmailtime = clock();
+
+	killdobjnum.me = -1;
+	killdobjnum.gui = -1;
+	dobjkilled.me = false;
+	dobjkilled.gui = false;
 
 	thread t1(TaskRec);
 	thread t2(TaskSendData);

@@ -1,5 +1,11 @@
 #include "convert.h"
 
+bool stob(string str)
+{
+	if(str == "0")return false;
+	else return true;
+}
+
 string ch_tostr(char* a, int size)
 {
 	int i;

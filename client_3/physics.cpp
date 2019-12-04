@@ -13,21 +13,21 @@ void initialphysics()
 
 void CheckForeginDobjzz() //необходимое локальное вычисление (т к пока что только 2 игрока)
 {
-	for (int i = 0; i < me.dobj_num; i++)
+	if (gui.key[5] && !pressed)
 	{
-		if (gui.key[5] && !pressed)
+		pressed = true;
+		for (int i = 0; i < me.dobj_num; i++)
 		{
-			pressed = true;
 			if (InDistance(25, gui.c, me.dobj[i].c))
 			{
 				//gui.dobj_num++;
 				//gui.dobj.resize(gui.dobj_num);
 				//gui.dobj[gui.dobj_num - 1] = me.dobj[i];
-				//me.DestroyDobj(i);
+				me.DestroyDobj(i);
 			}
 		}
-		if (!gui.key[5]) pressed = false;
 	}
+	if (!gui.key[5]) pressed = false;
 }
 
 void setphysics()

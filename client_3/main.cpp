@@ -143,7 +143,7 @@ void TaskRec()
 				GuiPacketNum = split(recived, "/", 7);
 				MyOldPacketNum = split(recived, "/", 8);
 
-				me.dobj_num = stoi(split(recived, "/", 9));
+				//me.dobj_num = stoi(split(recived, "/", 9));
 				ForMeCalc_c.resize(me.dobj_num + 1);
 				ForMeCalc_d.resize(me.dobj_num + 1);
 				me.dobj.resize(me.dobj_num);
@@ -155,7 +155,7 @@ void TaskRec()
 					ForMeCalc_d[i + 1].angle = float(stoi(split(recived, "/", 13 + i * 5))) / 100;
 					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", 14 + i * 5))) / 100;
 
-					if ((ForMeCalc_d[i + 1].value == 0 && me.dobj[i].speed.value != ForMeCalc_d[i + 1].value) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
+					if ((ForMeCalc_d[i + 1].value == 0 /*&& me.dobj[i].speed.value != 0*/) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
 					{
 						me.dobj[i].c.x = ForMeCalc_c[i + 1].x;
 						me.dobj[i].c.y = ForMeCalc_c[i + 1].y;
@@ -235,6 +235,8 @@ void TaskSendInput()
 
 int main(int argc, char* argv[])
 {
+	srand(pow(time(0), 2));
+
 	SetConsoleTitleA("Client");
 
 	WSADATA wsaData;

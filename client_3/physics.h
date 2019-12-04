@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <vector>
 #include "convert.h"
+#include <ctime>
 
 
 using namespace std;
@@ -34,7 +35,7 @@ public:
 	coord c;
 	dir speed;
 	int type = ball;
-	bool taken = 1;
+	bool taken = 0;
 
 	void setmove(coord cord, dir spd)
 	{
@@ -129,16 +130,17 @@ public:
 	}
 
 	vector<DinamicObj> dobj;
-	int dobj_num = 1;
+	int dobj_num = 3;
 	void InitDobj()
 	{
 		vector<DinamicObj>().swap(dobj);
 		dobj.resize(dobj_num);
 
-		dobj[0].c.x = rand() % 800;
-		dobj[0].c.y = rand() % 800;
-		//dobj[1].c.x = rand() % 800;
-		//dobj[1].c.y = rand() % 800;
+		for (int i = 0; i < dobj_num; i++)
+		{
+			dobj[i].c.x = rand() % 800;
+			dobj[i].c.y = rand() % 800;
+		}
 	}
 	void SetDobj()
 	{
@@ -164,10 +166,13 @@ public:
 	}
 	void DestroyDobj(int count)
 	{
-		dobj_num--;
-		for (int i = count; i < dobj_num; i++)
-			dobj[i] = dobj[i + 1];
-		dobj.resize(dobj_num);
+		if (count < dobj_num)
+		{
+			dobj_num--;
+			for (int i = count; i < dobj_num; i++)
+				dobj[i] = dobj[i + 1];
+			dobj.resize(dobj_num);
+		}
 	}
 };
 

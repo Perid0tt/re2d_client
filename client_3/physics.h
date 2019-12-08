@@ -48,6 +48,8 @@ public:
 	}
 	void move()
 	{
+		speed.value -= 0.02;
+		if (speed.value < 0)speed.value = 0;
 		c.x += speed.value * cos(speed.angle);
 		c.y += speed.value * sin(speed.angle);
 		if (c.x < 0)c.x = 0;

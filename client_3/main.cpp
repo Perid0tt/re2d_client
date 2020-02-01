@@ -20,7 +20,10 @@ const string SERVERIP = "78.24.219.108";
 char buffer[BUFFERLENGTH];
 SOCKET connectSocket;
 SOCKADDR_IN otherAddr;
+SOCKADDR_IN remoteAddr;
 
+int iResult;
+int	remoteAddrLen;
 int otherSize;
 string GuiTime = "0";
 string MyOldTime = "0";
@@ -113,11 +116,10 @@ void TaskRec()
 	int PingCalcTime = 0;
 	while (true) 
 	{
-		SOCKADDR_IN remoteAddr;
-		int	remoteAddrLen = sizeof(remoteAddr);
-		int iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
+		remoteAddrLen = sizeof(remoteAddr);
+		iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
 
-		if (iResult > 0) 
+		if (iResult > 0 && buffer[0] != '%')
 		{
 			if (ConnectToGuiFase == 0) ConnectToGuiFase = 1;
 			//cout << NormalizedIPString(remoteAddr) << " -> " << string(buffer, buffer + iResult) << endl;
@@ -322,6 +324,22 @@ int main(int argc, char* argv[])
 	u_long iMode = 1;
 	ioctlsocket(connectSocket, FIONBIO, &iMode);
 
+
+	bool connected = false;
+	std::string msg = "%";
+	remoteAddrLen = sizeof(remoteAddr);
+	cout << "Connecting";
+	while (!connected)
+	{
+		cout << ".";
+		sendto(connectSocket, msg.c_str(), msg.length(), 0, (sockaddr*)&otherAddr, otherSize);
+		iResult = recvfrom(connectSocket, buffer, BUFFERLENGTH, 0, (sockaddr*)&remoteAddr, &remoteAddrLen);
+		if (iResult > 0) connected = true;
+		Sleep(8);
+	}
+	cout << "\nConnected\n";
+
+
 	gotmailtime = clock();
 
 	killdobjnum.me = -1;
@@ -332,11 +350,11 @@ int main(int argc, char* argv[])
 	thread t1(TaskRec);
 	thread t2(TaskSendData);
 	thread t3(TaskSendInput);
-	thread t4(writeconsole);
+	//thread t4(writeconsole);
 
 	initialphysics();
 
-	WindowSetup(1030, 150, 800, 800);
+	WindowSetup(550, 150, 800, 800);
 	GraphicsWindow();
 
 	getchar();

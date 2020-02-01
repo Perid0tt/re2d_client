@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Output.h"
 using namespace std;
 
 struct dualnet_int

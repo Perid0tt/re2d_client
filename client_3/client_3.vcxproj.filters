@@ -5,10 +5,12 @@
     <ClCompile Include="physics.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="convert.cpp" />
+    <ClCompile Include="Output.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="2d_graphics.h" />
     <ClInclude Include="physics.h" />
     <ClInclude Include="convert.h" />
+    <ClInclude Include="Output.h" />
   </ItemGroup>
 </Project>

@@ -147,7 +147,7 @@ void TaskRec()
 				ForMeCalc_c[0].y = stoi(split(recived, "/", 3));
 				MyOldTime = split(recived, "/", 4);
 				ForMeCalc_d[0].angle = float(stoi(split(recived, "/", 5))) / 100;
-				ForMeCalc_d[0].value = float(stoi(split(recived, "/", 6))) / 100;
+				ForMeCalc_d[0].value = float(stoi(split(recived, "/", 6))) / 100 / 60;
 				GuiPacketNum = split(recived, "/", 7);
 				MyOldPacketNum = split(recived, "/", 8);
 
@@ -171,7 +171,7 @@ void TaskRec()
 					ForMeCalc_c[i + 1].x = stoi(split(recived, "/", varnum + 2 + i * 5));
 					ForMeCalc_c[i + 1].y = stoi(split(recived, "/", varnum + 3 + i * 5));
 					ForMeCalc_d[i + 1].angle = float(stoi(split(recived, "/", varnum + 4 + i * 5))) / 100;
-					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", varnum + 5 + i * 5))) / 100;
+					ForMeCalc_d[i + 1].value = float(stoi(split(recived, "/", varnum + 5 + i * 5))) / 100 / 180;
 
 					if ((ForMeCalc_d[i + 1].value == 0 /*&& me.dobj[i].speed.value != 0*/) || (me.dobj[i].speed.angle != ForMeCalc_d[i + 1].angle))
 					{
@@ -220,14 +220,14 @@ void TaskSendData()
 		packet_num++;
 		string msg = "#";
 		msg += "/" + to_string(int(gui.c.x)) + "/" + to_string(int(gui.c.y)) + "/" + GuiTime + "/" + to_string(int(gui.speed.angle * 100)) + "/"
-			+ to_string(int(gui.speed.value * 100)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/" + to_string(gui.dobj_num) + '/'
+			+ to_string(int(gui.speed.value * 100 * 60)) + "/" + to_string(packet_num) + "/" + GuiPacketNum + "/" + to_string(gui.dobj_num) + '/'
 			+ to_string(killdobjnum.me) + "/" + to_string(dobjkilled.gui) + "/";
 
 		for (int i = 0; i < gui.dobj_num; i++)
 		{
 			msg += to_string(gui.dobj[i].type) + "/"
 				+ to_string(int(gui.dobj[i].c.x)) + "/" + to_string(int(gui.dobj[i].c.y)) + "/" 
-				+ to_string(int(gui.dobj[i].speed.angle * 100)) + "/" + to_string(int(gui.dobj[i].speed.value * 100)) + "/";
+				+ to_string(int(gui.dobj[i].speed.angle * 100)) + "/" + to_string(int(gui.dobj[i].speed.value * 100 * 180)) + "/";
 		}
 
 		msg += "$" + to_string(msg.length()) + "&" + "/";
@@ -352,10 +352,10 @@ int main(int argc, char* argv[])
 	thread t3(TaskSendInput);
 	//thread t4(writeconsole);
 
+	WindowSetup(550, 150);
 	initialphysics();
-
-	WindowSetup(550, 150, 800, 800);
 	GraphicsWindow();
+
 
 	getchar();
 

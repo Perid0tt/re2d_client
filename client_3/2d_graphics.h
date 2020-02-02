@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void WindowSetup(int, int, int, int);
+void WindowSetup(int, int);
 
 void GraphicsWindow();
 

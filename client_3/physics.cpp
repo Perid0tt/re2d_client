@@ -9,8 +9,8 @@ extern dualnet_bool dobjkilled;
 
 void initialphysics()
 {
-	gui = player(400, 400);
-	me = player(400, 400);
+	gui = player(0, 0);
+	me = player(0, 0);
 }
 
 void CheckForeginDobjzz() //необходимое локальное вычисление (т к пока что только 2 игрока)

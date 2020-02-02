@@ -9,6 +9,8 @@
 
 
 using namespace std;
+extern int WindowWeidht;
+extern int WindowHeight;
 
 struct coord
 {
@@ -52,10 +54,10 @@ public:
 		if (speed.value < 0)speed.value = 0;
 		c.x += speed.value * cos(speed.angle);
 		c.y += speed.value * sin(speed.angle);
-		if (c.x < 0)c.x = 0;
-		if (c.x > 800)c.x = 800;
-		if (c.y < 0)c.y = 0;
-		if (c.y > 800)c.y = 800;
+		if (c.x < -WindowWeidht / 2)c.x = -WindowWeidht / 2;
+		if (c.x > WindowWeidht / 2)c.x = WindowWeidht / 2;
+		if (c.y < -WindowHeight / 2)c.y = -WindowHeight / 2;
+		if (c.y > WindowHeight / 2)c.y = WindowHeight / 2;
 	}
 
 	DinamicObj& operator = (DinamicObj origin)
@@ -140,8 +142,8 @@ public:
 
 		for (int i = 0; i < dobj_num; i++)
 		{
-			dobj[i].c.x = rand() % 800;
-			dobj[i].c.y = rand() % 800;
+			dobj[i].c.x = rand() % WindowWeidht - (WindowWeidht / 2);
+			dobj[i].c.y = rand() % WindowHeight - (WindowHeight / 2);
 		}
 	}
 	void SetDobj()

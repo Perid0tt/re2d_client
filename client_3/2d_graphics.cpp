@@ -14,12 +14,14 @@ bool cap = true;
 int frametime;
 SDL_Event sev;
 
-void WindowSetup(int xpos, int ypos, int weidth, int height)
+int WindowWeidht = 800, WindowHeight = 800;
+
+void WindowSetup(int xpos, int ypos)
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_DisplayMode DM;
 	SDL_GetCurrentDisplayMode(0, &DM);
-	SDL_Window *window = SDL_CreateWindow("2D", xpos, ypos, weidth, height, SDL_WINDOW_SHOWN);
+	SDL_Window *window = SDL_CreateWindow("2D", xpos, ypos, WindowWeidht, WindowHeight, SDL_WINDOW_SHOWN);
 	rendererg = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 }
 
@@ -64,14 +66,14 @@ void GraphicsWindow()
 
 		setphysics();
 
-		fill_circle(renderer, gui.c.x, gui.c.y, 25, 255, 0, 0, 255);
-		fill_circle(renderer, me.c.x, me.c.y, 25, 0, 255, 0, 255);
+		fill_circle(renderer, gui.c.x + WindowWeidht / 2, gui.c.y + WindowHeight / 2, 50, 255, 0, 0, 255);
+		fill_circle(renderer, me.c.x + WindowWeidht / 2, me.c.y + WindowHeight / 2, 50, 0, 255, 0, 255);
 		//fill_circle(renderer, ForMeCalc_c.x, ForMeCalc_c.y, 15, 255, 0, 255, 255);
 
 		for (int i = 0; i < gui.dobj_num; i++)
-			fill_circle(renderer, gui.dobj[i].c.x, gui.dobj[i].c.y, 5, 0, 200, 200, 255);
+			fill_circle(renderer, gui.dobj[i].c.x + WindowWeidht / 2, gui.dobj[i].c.y + WindowHeight / 2, 5, 0, 200, 200, 255);
 		for (int i = 0; i < me.dobj_num; i++)
-			fill_circle(renderer, me.dobj[i].c.x, me.dobj[i].c.y, 5, 200, 0, 200, 255);
+			fill_circle(renderer, me.dobj[i].c.x + WindowWeidht / 2, me.dobj[i].c.y + WindowHeight / 2, 5, 200, 0, 200, 255);
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(1);
